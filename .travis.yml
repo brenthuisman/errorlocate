@@ -3,6 +3,9 @@ cache: packages
 
 warnings_are_errors: true
 
+apt_packages:
+  - libglpk-dev
+
 env:
  global:
    - CRAN: http://cran.rstudio.com
