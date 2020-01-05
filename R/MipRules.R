@@ -63,7 +63,7 @@ miprules <- setRefClass("MipRules",
        # TODO see if this can be executed in parallel.
        lp <- translate_mip_lp( mip_rules(), objective, ...)
        #TODO set timer, duration etc.
-       browser()
+       #browser()
        s <- Rglpk_solve_LP( obj = lp$obj
                      , mat = lp$mat
                      , dir = lp$dir
