@@ -14,7 +14,7 @@
 #'   \item \code{$is_infeasible} Checks if the current system of mixed integer rules is feasible.
 #'   \item \code{$set_values}: set values and weights for variables (determines the objective function).
 #' }
-#'
+#' @importFrom Rglpk Rglpk_solve_LP
 #' @exportClass MipRules
 #' @examples
 #' rules <- validator(x > 1)
@@ -61,11 +61,31 @@ miprules <- setRefClass("MipRules",
      },
      execute = function(...){
        # TODO see if this can be executed in parallel.
-       lp <- translate_mip_lp(mip_rules(), objective, ...)
+       lp <- translate_mip_lp( mip_rules(), objective, ...)
        #TODO set timer, duration etc.
-       s <- solve(lp)
-       values <- lpSolveAPI::get.variables(lp)
-       names(values) <- colnames(lp)
+       browser()
+       s <- Rglpk_solve_LP( obj = lp$obj
+                     , mat = lp$mat
+                     , dir = lp$dir
+                     , rhs = lp$rhs
+                     , bounds = lp$bounds
+                     , types = lp$types
+                     , max = lp$max
+                     , control = lp$control
+                     )
+       #browser()
+       Rglpk:::Rglpk_write_file("test.mps"
+                               , obj = lp$obj
+                               , mat = lp$mat
+                               , dir = lp$dir
+                               , rhs = lp$rhs
+                               , bounds = lp$bounds
+                               , types = unname(lp$types)
+                               , max = lp$max
+                               )
+       #browser()
+       values <- s$solution
+       names(values) <- colnames(lp$mat)
        adapt <- values[names(objective)] == 1
        names(adapt) <- gsub(".delta_", "", names(adapt))
        #TODO improve the return values based on value of s
@@ -85,8 +105,19 @@ miprules <- setRefClass("MipRules",
        names(obj) <- vars
 
        lp <- translate_mip_lp(mr, obj)
-       i <- lpSolveAPI::solve.lpExtPtr(lp)
-       feasible <- switch( as.character(i),
+
+       s <- Rglpk_solve_LP( obj = lp$obj
+                            , mat = lp$mat
+                            , dir = lp$dir
+                            , rhs = lp$rhs
+                            , bounds = lp$bounds
+                            , types = lp$types
+                            , max = lp$max
+                            , control = lp$control
+                            ,
+       )
+
+       feasible <- switch( as.character(s$status),
           "0" = TRUE,  # optimal solution found (so feasible)
           "1" = TRUE,  # sub optimal solution (so feasible)
           "2" = FALSE, # infeasible

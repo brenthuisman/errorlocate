@@ -10,7 +10,7 @@ describe("errorlocation",{
     expect_equal(el$errors, values(el))
   })
   it("can do a summary",{
-    rules <- validator(x > 1)
+    rules <- validator(x > 1.8)
     data <- data.frame(x = 1:2, y=c(2,NA))
     el <- locate_errors(data, rules)
 
